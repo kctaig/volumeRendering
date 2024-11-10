@@ -1,10 +1,12 @@
 #pragma once
 
 #include <iostream>
-#include <vector>
 #include <string>
+#include <vector>
+#include "glm/glm.hpp"
 
+using glm::vec3;
 using std::string;
 using std::vector;
-
-#define short3DVector vector<vector<vector<int16_t>>>
+using std::cout;
+using std::endl;

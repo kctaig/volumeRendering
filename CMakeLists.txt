@@ -16,4 +16,5 @@ file(GLOB_RECURSE NLOHMANN_FILES "3dparty/nlohmann/*.hpp")
 set(PROJECT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_subdirectory(source)
+add_subdirectory(3dparty)
 
