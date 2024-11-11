@@ -25,7 +25,7 @@ vec3 rayCast(const Camera& cam, const Ray& ray, const Volume& volume) {
 
     vec3 pos = cam.pos;
     //float stepSize = (cam.farPlane - cam.nearPlane) / cam.setp;
-    for (float t = 0; t < 400; t += 0.1) {
+    for (float t = 0; t < 500.f; t += 0.1f) {
         pos = pos + ray.dir * t;
 		if (!volume.insideBBox(pos))
 			continue;
@@ -51,17 +51,21 @@ void renderVolume(Camera& cam, const Volume& volume) {
     int count = 0;
 
 #pragma omp parallel for num_threads(16)
-    for (int y = 0; y < volume.dimensions[2]; ++y) {
-        for (int x = 0; x < volume.dimensions[0]; ++x) {
+    for (int y = 0; y < film->height; ++y) {
+        for (int x = 0; x < film->width; ++x) {
+			//vec3 color = { 0.0f, 0.0f, 0.0f };
             Ray ray = cam.generateRay(volume, glm::ivec2{x, y});
             vec3 color = rayCast(cam, ray, volume);
+#if 1
             mtx.lock();
             count++;
-            if (count % volume.dimensions[0] == 0) {
-               
-                cout << (float)count / (volume.dimensions[0] * volume.dimensions[2]) << endl;
+            if (count % film->width == 0) {
+                float progress = static_cast<float>(count) / (film->height * film->width);
+                int percent = static_cast<int>(progress * 100); // 将进度转换为百分比
+                cout << "Progress: " << percent << "%" << endl;
             }
             mtx.unlock();
+#endif
             film->setPixel(x, y, color);
         }
     }

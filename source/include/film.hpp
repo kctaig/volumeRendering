@@ -16,4 +16,5 @@ class Film {
 
     size_t width, height;
     vector<vec3> pixels;
+    vector<vec3> plane;
 };

@@ -82,16 +82,18 @@ int main() {
         "D:/Information/sci-vis/volumeRendering/data/cbct.raw",
         "D:/Information/sci-vis/volumeRendering/data/raw_file2.json");
     // set film
-    Film film(volume.dimensions[0], volume.dimensions[2]);
+    Film film(400, 400);
     // set camera
-    //vec3 center = vec3(volume.dimensions[0] * volume.spacing[0] / 2, volume.dimensions[1] * volume.spacing[1] / 2, volume.dimensions[2] * volume.spacing[2] / 2);
-    vec3 pos1 = vec3(volume.dimensions[0] * volume.spacing[0] / 2, volume.dimensions[1] * volume.spacing[1] + 200, volume.dimensions[2] * volume.spacing[2] / 2);
+    vec3 center = vec3(volume.dimensions[0] * volume.spacing[0] / 2, volume.dimensions[1] * volume.spacing[1] / 2, volume.dimensions[2] * volume.spacing[2] / 2);
+    vec3 pos1 = vec3(volume.dimensions[0] * volume.spacing[0] / 2, volume.dimensions[1] * volume.spacing[1] + 50, volume.dimensions[2] * volume.spacing[2] / 2);
     //vec3 pos2 = vec3(00, volume.dimensions[1] * volume.spacing[1] / 2, volume.dimensions[2] * volume.spacing[2] / 2);
-    //Camera cam(pos, up, center);
-	Camera cam(pos1);
+
+    Camera cam(pos1, {0,0,-1}, center);
+	//Camera cam(pos1);
     cam.film = &film;
     renderVolume(cam, volume);
-    //writePointsToPLY("D:/Information/sci-vis/volumeRendering/output/plane.ply", cam.plane);
+
+    //writePointsToPLY("D:/Information/sci-vis/volumeRendering/output/plane.ply", film.plane);
 	//generateOBJFromBoundingBox(volume.bbox.min, volume.bbox.max, "D:/Information/sci-vis/volumeRendering/output/bbox.obj");
 
     return 0;
