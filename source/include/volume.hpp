@@ -29,11 +29,15 @@ class Volume {
     Volume(const string& rawFilePath, const string& jsonFilePath);
     void loadRawData(const string& rawFilePath);
     json loadJson(const string& jsonFilePath);
-    void preProcessVolume();
     vec3 transfer(float density) const;
+    void updateBBox();
+    void updateRange();
+
+    void outCloud();
 
     vector<size_t> dimensions;
     vec3 spacing;
     vector<Voxel> voxels;
     BBox bbox;
-};
+    glm::vec2 range;
+};                   

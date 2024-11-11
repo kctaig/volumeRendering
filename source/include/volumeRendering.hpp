@@ -22,15 +22,18 @@ vec3 rayCast(const Camera& cam, const Ray& ray, const Volume& volume) {
 
     vec3 pos = cam.pos + ray.dir * cam.nearPlane;
     float stepSize = (cam.farPlane - cam.nearPlane) / cam.setp;
-
     for (float t = cam.nearPlane; t < cam.farPlane; t += stepSize) {
 
         float density = sampleVolume(volume, pos);
-            
-		vec3 sampleColor = volume.transfer(density);      // Transfer function for color mapping
- 
-        //float sampleOpacity = density * 0.1f;            // Adjust opacity scaling factor
-        float sampleOpacity = (density + 3024) / (3071 + 3024);
+		vec3 sampleColor = volume.transfer(density);
+        //density = (density - volume.range.x) / (volume.range.y - volume.range.x);
+         
+        //vec3 sampleColor = { 0,0,0 };
+        //if (density < 0.3) sampleColor = { 0,0,1 };
+        //else sampleColor = { 0,1,0 };
+	
+        //float sampleOpacity = density * 0.1f;            
+        float sampleOpacity = (density  - volume.range.x) / (volume.range.y - volume.range.x);
 
         // Accumulate color and opacity using front-to-back compositing
         accumulatedColor += sampleColor * (1.0f - accumulatedOpacity);
@@ -49,14 +52,16 @@ vec3 rayCast(const Camera& cam, const Ray& ray, const Volume& volume) {
 // Main function to render an image using raycasting
 void renderVolume(Camera& cam, const Volume& volume) {
     Film* film = cam.film;
+
 //#pragma omp parallel for
-    for (int y = 0; y < film->height; ++y) {
-        for (int x = 0; x < film->width; ++x) {
-			vec3 color = vec3{ 0.0f, 0.0f, 0.0f };
-            Ray ray = cam.generateRay(glm::ivec2{x, y});
+    for (int y = 0; y < volume.dimensions[2]; ++y) {
+        for (int x = 0; x < volume.dimensions[0]; ++x) {
+			vec3 color = vec3{ 0.0f, 0.f, 0.0f };
+            Ray ray = cam.generateRay(volume, glm::ivec2{x, y});
 			if (cam.updatePlane(volume, ray))
                 color = rayCast(cam, ray, volume);
-			cout << cam.nearPlane  << " " << cam.farPlane << endl;
+				//color = vec3{ 1.0f, 0.0f, 0.0f };
+			//cout << cam.nearPlane  << " " << cam.farPlane << endl;
 			//cout << color.x << " " << color.y << " " << color.z << endl;
             film->setPixel(x, y, color);
         }

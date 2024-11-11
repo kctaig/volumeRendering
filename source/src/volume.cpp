@@ -11,31 +11,14 @@ json Volume::loadJson(const string& jsonFilePath) {
     return jsonData;
 }
 
-void Volume::preProcessVolume()
-{
-    int16_t maxDensity = std::numeric_limits<int16_t>::lowest();
-    int16_t minDensity = std::numeric_limits<int16_t>::max();
-
-    // 寻找密度值的最小和最大值
-    for (auto& voxel : voxels) {
-        if (voxel.density > maxDensity) maxDensity = voxel.density;
-        if (voxel.density < minDensity) minDensity = voxel.density;
-    }
-
-    // 归一化密度值到[0, 1]区间
-    for (auto& voxel : voxels) {
-        voxel.density = (voxel.density - minDensity) / (maxDensity - minDensity);
-    }
-}
-
 vec3 Volume::transfer(float density) const
 {
     // 定义颜色点
     std::vector<std::tuple<float, vec3>> color_points = {
-        std::make_tuple(-3024.0f, vec3{0.0f, 0.0f, 0.0f}),  // 空气，黑色
-        std::make_tuple(-800.0f, vec3{0.62f, 0.36f, 0.18f}),  // 软组织
-        std::make_tuple(0.0f, vec3{0.88f, 0.60f, 0.29f}),    // 骨骼阈值
-        std::make_tuple(3071.0f, vec3{1.0f, 1.0f, 1.0f})     // 密集骨骼，亮白色
+        std::make_tuple(range.x, vec3{0.0f, 0.0f, 0.0f}),  // 空气，黑色
+        std::make_tuple(200.0f, vec3{0.62f, 0.36f, 0.18f}),  // 软组织
+        std::make_tuple(500.f, vec3{0.88f, 0.60f, 0.29f}),    // 骨骼阈值
+        std::make_tuple(range.y, vec3{1.0f, 1.0f, 1.0f})     // 密集骨骼，亮白色
     };
 
     // 在颜色点之间进行线性插值
@@ -63,16 +46,29 @@ vec3 Volume::transfer(float density) const
     return vec3{ 0.0f, 0.0f, 0.0f };
 }
 
+void Volume::updateBBox()
+{
+    bbox.min = vec3(0, 0, 0);
+    bbox.max = vec3(dimensions[0] * spacing[0], dimensions[1] * spacing[1], dimensions[2] * spacing[2]);
+}
+
+void Volume::updateRange()
+{
+    range = glm::vec2(std::numeric_limits<float>::max(), std::numeric_limits<float>::lowest());
+    for (auto voxel : voxels) {
+        if (voxel.density < range.x) range.x = (float)voxel.density;
+        if (voxel.density > range.y) range.y = (float)voxel.density;
+    }
+}
+
 Volume::Volume(const string& rawFilePath, const string& jsonFilePath) {
     json metadata = loadJson(jsonFilePath);
     vector<size_t>d = metadata["dimensions"];
     dimensions = d;
     auto s = metadata["spacing"];
 	spacing = glm::vec3(s[0],s[1],s[2]);
+    updateBBox();
     loadRawData(rawFilePath);
-	//preProcessVolume();
-	bbox.min = vec3(0, 0, 0);
-	bbox.max = vec3(dimensions[0] * spacing[0], dimensions[1] * spacing[1], dimensions[2] * spacing[2]);
 }
 
 void Volume::loadRawData(const string& rawFilePath) {
@@ -83,19 +79,43 @@ void Volume::loadRawData(const string& rawFilePath) {
     auto total = dimensions[0] * dimensions[1] * dimensions[2];
     voxels.resize(total);
     rawFile.read(reinterpret_cast<char*>(voxels.data()), total * sizeof(int16_t));
+    updateRange();
 }
 
 glm::vec2 BBox::intersect(const Ray& ray) const
 {
-    vec3 invDir = vec3(1.0f) / ray.dir;
-    vec3 tMin = (min - ray.pos) * invDir;
-    vec3 tMax = (max - ray.pos) * invDir;
-    vec3 t1 = glm::min(tMin, tMax);
-    vec3 t2 = glm::max(tMin, tMax);
-    float tNear = std::max(std::max(t1.x, t1.y), t1.z);
-    float tFar = std::min(std::min(t2.x, t2.y), t2.z);
-    if (tNear < 0 || tNear > tFar) {
-        return glm::vec2(-1.f, -1.f);
-    }
-    return glm::vec2(tNear, tFar);
+	float tmin = (min.x - ray.pos.x) / ray.dir.x;
+	float tmax = (max.x - ray.pos.x) / ray.dir.x;
+
+	if (tmin > tmax) std::swap(tmin, tmax);
+
+	float tymin = (min.y - ray.pos.y) / ray.dir.y;
+	float tymax = (max.y - ray.pos.y) / ray.dir.y;
+
+	if (tymin > tymax) std::swap(tymin, tymax);
+
+	if ((tmin > tymax) || (tymin > tmax))
+		return { -1, -1 };
+
+	if (tymin > tmin)
+		tmin = tymin;
+
+	if (tymax < tmax)
+		tmax = tymax;
+
+	float tzmin = (min.z - ray.pos.z) / ray.dir.z;
+	float tzmax = (max.z - ray.pos.z) / ray.dir.z;
+
+	if (tzmin > tzmax) std::swap(tzmin, tzmax);
+
+	if ((tmin > tzmax) || (tzmin > tmax))
+		return { -1, -1 };
+
+	if (tzmin > tmin)
+		tmin = tzmin;
+
+	if (tzmax < tmax)
+		tmax = tzmax;
+
+	return { tmin, tmax };
 }
