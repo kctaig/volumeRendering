@@ -12,13 +12,9 @@ class Camera {
         : pos(pos), up(up), viewPoint(viewPoint) {}
 
     Camera(vec3 pos):pos(pos){}
-    bool updatePlane(const Volume& volume, const Ray& ray);
-
     Ray generateRay(const Volume& volume, const glm::ivec2& pixelCoord, const glm::vec2& offsets = {0.5, 0.5});
 
     vec3 pos, up, viewPoint;
     Film* film;
-    float nearPlane = -1, farPlane = -1, setp = 100;
     float vfov;
-    vector<vec3> plane;
 };

@@ -3,16 +3,6 @@
 #include <glm/ext/matrix_transform.hpp>
 #include <fstream>
 
-bool Camera::updatePlane(const Volume& volume, const  Ray& ray)
-{
-	glm::vec2 hitInfo = volume.bbox.intersect(ray);
-    nearPlane = hitInfo.x;
-    farPlane = hitInfo.y;
-	if (hitInfo.x > 0 && hitInfo.x < hitInfo.y)
-		return true;
-    return false;
-}
-
 Ray Camera::generateRay(const Volume& volume ,const glm::ivec2& pixelCoord, const glm::vec2& offsets)  {
     // the ratio of width to height
     //auto aspectRatio = static_cast<float>(film->width) / static_cast<float>(film->height);
@@ -31,7 +21,7 @@ Ray Camera::generateRay(const Volume& volume ,const glm::ivec2& pixelCoord, cons
 
     vec3 worldCoord = vec3(pixelCoord[0] * volume.spacing[0], volume.dimensions[1] * volume.spacing[1], pixelCoord[1] * volume.spacing[2]);
 
-    plane.push_back(vec3(worldCoord));
+    //plane.push_back(vec3(worldCoord));
 
     auto rayDir = glm::normalize(worldCoord - pos);
     return Ray(pos, rayDir);

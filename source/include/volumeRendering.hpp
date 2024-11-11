@@ -4,6 +4,9 @@
 #include <cmath>
 #include <ray.hpp>
 #include <volume.hpp>
+#include <mutex>
+
+std::mutex mtx;
 
 // Sample the volume at a given point (trilinear interpolation for smooth values)
 float sampleVolume(const Volume& volume, const vec3& pos) {
@@ -20,31 +23,23 @@ vec3 rayCast(const Camera& cam, const Ray& ray, const Volume& volume) {
     vec3 accumulatedColor = {0.0f, 0.0f, 0.0f};
     float accumulatedOpacity = 0.0f;
 
-    vec3 pos = cam.pos + ray.dir * cam.nearPlane;
-    float stepSize = (cam.farPlane - cam.nearPlane) / cam.setp;
-    for (float t = cam.nearPlane; t < cam.farPlane; t += stepSize) {
-
+    vec3 pos = cam.pos;
+    //float stepSize = (cam.farPlane - cam.nearPlane) / cam.setp;
+    for (float t = 0; t < 400; t += 0.1) {
+        pos = pos + ray.dir * t;
+		if (!volume.insideBBox(pos))
+			continue;
         float density = sampleVolume(volume, pos);
-		vec3 sampleColor = volume.transfer(density);
-        //density = (density - volume.range.x) / (volume.range.y - volume.range.x);
-         
-        //vec3 sampleColor = { 0,0,0 };
-        //if (density < 0.3) sampleColor = { 0,0,1 };
-        //else sampleColor = { 0,1,0 };
-	
-        //float sampleOpacity = density * 0.1f;            
-        float sampleOpacity = (density  - volume.range.x) / (volume.range.y - volume.range.x);
+        density = (density - volume.range.x) / (volume.range.y - volume.range.x);
+		glm::vec4 sampleColor = volume.transfer(density);
+		float sampleOpacity = sampleColor.a;
 
-        // Accumulate color and opacity using front-to-back compositing
-        accumulatedColor += sampleColor * (1.0f - accumulatedOpacity);
+        accumulatedColor += vec3(sampleColor) * (1.0f - accumulatedOpacity);
         accumulatedOpacity += sampleOpacity * (1.0f - accumulatedOpacity);
 
-        // Stop ray if fully opaque
         if (accumulatedOpacity >= 1.0f)
             break;
-
-        // Advance along the ray
-        pos = pos + ray.dir * stepSize;
+       
     }
     return accumulatedColor;
 }
@@ -53,16 +48,20 @@ vec3 rayCast(const Camera& cam, const Ray& ray, const Volume& volume) {
 void renderVolume(Camera& cam, const Volume& volume) {
     Film* film = cam.film;
 
-//#pragma omp parallel for
+    int count = 0;
+
+#pragma omp parallel for num_threads(16)
     for (int y = 0; y < volume.dimensions[2]; ++y) {
         for (int x = 0; x < volume.dimensions[0]; ++x) {
-			vec3 color = vec3{ 0.0f, 0.f, 0.0f };
             Ray ray = cam.generateRay(volume, glm::ivec2{x, y});
-			if (cam.updatePlane(volume, ray))
-                color = rayCast(cam, ray, volume);
-				//color = vec3{ 1.0f, 0.0f, 0.0f };
-			//cout << cam.nearPlane  << " " << cam.farPlane << endl;
-			//cout << color.x << " " << color.y << " " << color.z << endl;
+            vec3 color = rayCast(cam, ray, volume);
+            mtx.lock();
+            count++;
+            if (count % volume.dimensions[0] == 0) {
+               
+                cout << (float)count / (volume.dimensions[0] * volume.dimensions[2]) << endl;
+            }
+            mtx.unlock();
             film->setPixel(x, y, color);
         }
     }

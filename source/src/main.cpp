@@ -28,11 +28,9 @@ void writePointsToPLY(const std::string& filename, const std::vector<glm::vec3>&
     file.close();
 }
 
-
 struct Quad {
     int v1, v2, v3, v4;
 };
-
 
 void generateOBJFromBoundingBox(const glm::vec3& minPoint, const glm::vec3& maxPoint, const std::string& filename) {
     // 定义边界框的八个顶点
@@ -87,15 +85,13 @@ int main() {
     Film film(volume.dimensions[0], volume.dimensions[2]);
     // set camera
     //vec3 center = vec3(volume.dimensions[0] * volume.spacing[0] / 2, volume.dimensions[1] * volume.spacing[1] / 2, volume.dimensions[2] * volume.spacing[2] / 2);
-    vec3 pos = vec3(volume.dimensions[0] * volume.spacing[0] / 2, volume.dimensions[1] * volume.spacing[1] + 50, volume.dimensions[2] * volume.spacing[2] / 2);
-    //vec3 up = vec3(volume.dimensions[0] * volume.spacing[0] / 2, volume.dimensions[1] * volume.spacing[1] + 50, -1);
+    vec3 pos1 = vec3(volume.dimensions[0] * volume.spacing[0] / 2, volume.dimensions[1] * volume.spacing[1] + 200, volume.dimensions[2] * volume.spacing[2] / 2);
+    //vec3 pos2 = vec3(00, volume.dimensions[1] * volume.spacing[1] / 2, volume.dimensions[2] * volume.spacing[2] / 2);
     //Camera cam(pos, up, center);
-	Camera cam(pos);
+	Camera cam(pos1);
     cam.film = &film;
     renderVolume(cam, volume);
-
     //writePointsToPLY("D:/Information/sci-vis/volumeRendering/output/plane.ply", cam.plane);
-
 	//generateOBJFromBoundingBox(volume.bbox.min, volume.bbox.max, "D:/Information/sci-vis/volumeRendering/output/bbox.obj");
 
     return 0;

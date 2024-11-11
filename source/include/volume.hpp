@@ -16,8 +16,6 @@ public:
 	BBox() {}
 	BBox(vec3 min, vec3 max) : min(min), max(max) {}
 
-    glm::vec2 intersect(const Ray& ray) const;
-
 	vec3 min;
 	vec3 max;
 };
@@ -29,15 +27,22 @@ class Volume {
     Volume(const string& rawFilePath, const string& jsonFilePath);
     void loadRawData(const string& rawFilePath);
     json loadJson(const string& jsonFilePath);
-    vec3 transfer(float density) const;
+    glm::vec4 transfer(float density) const;
     void updateBBox();
     void updateRange();
-
-    void outCloud();
+    bool insideBBox(const glm::vec3& point) const;
 
     vector<size_t> dimensions;
     vec3 spacing;
     vector<Voxel> voxels;
     BBox bbox;
     glm::vec2 range;
+
+    glm::vec4 colors[4] = {
+        glm::vec4(0.0f, 0.0f, 0.0f, 0.0f),   // ÆäËû
+        //glm::vec4(0.01f, 0.08f, 0.06f, 0.01f), // Æ¤·ô
+		glm::vec4(0.08,0.06,0.05,0.05), // Æ¤·ô
+        glm::vec4(0.07f, 0.01f, 0.01f, 0.02f), // ¼¡Èâ
+        glm::vec4(0.1f, 0.1f, 0.1f, 0.05f)    // ¹Ç÷À
+    };
 };                   
