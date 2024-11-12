@@ -82,14 +82,14 @@ int main() {
         "D:/Information/sci-vis/volumeRendering/data/cbct.raw",
         "D:/Information/sci-vis/volumeRendering/data/raw_file2.json");
     // set film
-    Film film(400, 400);
+    Film film(400, 225);
     // set camera
     vec3 center = vec3(volume.dimensions[0] * volume.spacing[0] / 2, volume.dimensions[1] * volume.spacing[1] / 2, volume.dimensions[2] * volume.spacing[2] / 2);
     vec3 pos1 = vec3(volume.dimensions[0] * volume.spacing[0] / 2, volume.dimensions[1] * volume.spacing[1] + 50, volume.dimensions[2] * volume.spacing[2] / 2);
     vec3 pos2 = vec3(-100, volume.dimensions[1] * volume.spacing[1] + 200, volume.dimensions[2] * volume.spacing[2] / 2);
     vec3 pos3 = vec3(-50, volume.dimensions[1] * volume.spacing[1], volume.dimensions[2] * volume.spacing[2] / 2);
 
-    Camera cam(pos2, {0,0,-1}, center);
+    Camera cam(pos1, {0,0,-1}, center, 90);
 	//Camera cam(pos1);
     cam.film = &film;
     renderVolume(cam, volume);

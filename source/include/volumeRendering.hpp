@@ -62,7 +62,7 @@ vec3 rayCast(const Camera& cam, const Ray& ray, const Volume& volume) {
 
     vec3 pos = cam.pos;
     //float stepSize = (cam.farPlane - cam.nearPlane) / cam.setp;
-    for (float t = 0; t < 300.f; t += 0.01f) {
+    for (float t = 0; t < 300.f; t += 0.1f) {
         pos = pos + ray.dir * t;
 		if (!volume.insideBBox(pos))
 			continue;
@@ -79,6 +79,22 @@ vec3 rayCast(const Camera& cam, const Ray& ray, const Volume& volume) {
        
     }
     return accumulatedColor;
+}
+
+
+// 函数：更新进度条
+void showProgress(int percent) {
+    const int barWidth = 50;  // 进度条宽度（字符数）
+    std::cout << "\r[";
+
+    int pos = barWidth * percent / 100;  // 计算当前百分比对应的位置
+    for (int i = 0; i < barWidth; ++i) {
+        if (i < pos) std::cout << "=";      // 完成部分
+        else if (i == pos) std::cout << ">"; // 当前进度点
+        else std::cout << " ";              // 未完成部分
+    }
+
+    std::cout << "] " << percent << "% " << std::flush;  // 输出百分比
 }
 
 // Main function to render an image using raycasting
@@ -99,9 +115,11 @@ void renderVolume(Camera& cam, const Volume& volume) {
             if (count % film->width == 0) {
                 float progress = static_cast<float>(count) / (film->height * film->width);
                 int percent = static_cast<int>(progress * 100); // 将进度转换为百分比
-                std::cout << "\rProgress: " << percent << "%" << std::flush;
+                //std::cout << "\rProgress: " << percent << "%" << std::flush;
+				showProgress(percent);
             }
             mtx.unlock();
+
 #endif
             film->setPixel(x, y, color);
         }

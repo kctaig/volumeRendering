@@ -5,7 +5,6 @@
 
 class Film {
    public:
-    Film() {}
     Film(size_t width, size_t height)
         : width(width), height(height) {
         pixels.resize(width * height);

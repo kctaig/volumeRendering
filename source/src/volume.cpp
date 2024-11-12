@@ -19,7 +19,7 @@ glm::vec4 Volume::transfer(float density) const
     else if (density > 0.24 && density <= 0.3) { // ¼¡Èâ
         return colors[0];
     }
-    else if (density > 0.3) { // ¹Ç÷À
+    else if (density > 0.30) { // ¹Ç÷À
         return colors[3];
     }
     else { // ÆäËû
