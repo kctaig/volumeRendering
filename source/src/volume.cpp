@@ -14,13 +14,13 @@ json Volume::loadJson(const string& jsonFilePath) {
 glm::vec4 Volume::transfer(float density) const
 {
     if (density > 0.14 && density <= 0.24) { // Æ¤·ô
-        return colors[1];
+        return colors[0];
     }
     else if (density > 0.24 && density <= 0.3) { // ¼¡Èâ
         return colors[0];
     }
     else if (density > 0.3) { // ¹Ç÷À
-        return colors[0];
+        return colors[3];
     }
     else { // ÆäËû
         return colors[0];

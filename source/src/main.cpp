@@ -86,9 +86,10 @@ int main() {
     // set camera
     vec3 center = vec3(volume.dimensions[0] * volume.spacing[0] / 2, volume.dimensions[1] * volume.spacing[1] / 2, volume.dimensions[2] * volume.spacing[2] / 2);
     vec3 pos1 = vec3(volume.dimensions[0] * volume.spacing[0] / 2, volume.dimensions[1] * volume.spacing[1] + 50, volume.dimensions[2] * volume.spacing[2] / 2);
-    //vec3 pos2 = vec3(00, volume.dimensions[1] * volume.spacing[1] / 2, volume.dimensions[2] * volume.spacing[2] / 2);
+    vec3 pos2 = vec3(-100, volume.dimensions[1] * volume.spacing[1] + 200, volume.dimensions[2] * volume.spacing[2] / 2);
+    vec3 pos3 = vec3(-50, volume.dimensions[1] * volume.spacing[1], volume.dimensions[2] * volume.spacing[2] / 2);
 
-    Camera cam(pos1, {0,0,-1}, center);
+    Camera cam(pos2, {0,0,-1}, center);
 	//Camera cam(pos1);
     cam.film = &film;
     renderVolume(cam, volume);
